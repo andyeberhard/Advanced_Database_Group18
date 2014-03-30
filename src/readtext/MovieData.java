@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Representation of the text file lines
  */
 package readtext;
 
@@ -37,12 +36,16 @@ public class MovieData {
             }
         }   
     }
+   
+    public String getTitle(){
+        return this.title;
+    }
     
     public String[] getActors(){
         return this.actors;
     }
     
-    private String getActorsAsString(){
+    public String getActorsAsString(){
         String as = "ACTORS: ";
         for(int i = 0; i < actors.length; i++){
             as += actors[i] + ", ";
@@ -51,7 +54,7 @@ public class MovieData {
         return as;
     }
     
-    private String getGenreAsString(){
+    public String getGenreAsString(){
         String gs = "GENRE: ";
         for(int i = 0; i < genre.length; i++){
             gs += genre[i] + ", ";
@@ -60,14 +63,13 @@ public class MovieData {
         return gs;
     }
     
-    public String description(){
+    public String getDescription(){
         String des = "";
         des += "TITLE: " + this.title + " ";
         des += "YEAR: " + this.year + " ";
         des += "RATING: " + this.rating + " ";
         des += getGenreAsString();
         des += getActorsAsString();
-        
         return des;
     }
     

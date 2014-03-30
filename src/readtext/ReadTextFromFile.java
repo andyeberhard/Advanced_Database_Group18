@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Class to Read the text file
  */
 package readtext;
 
@@ -23,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class ReadTextFromFile {
 private BufferedReader read;
-private ArrayList range = new ArrayList();
+
     
     public ReadTextFromFile(){
         try {
@@ -44,14 +43,15 @@ private ArrayList range = new ArrayList();
         }
     }
     
-    public void showEntries(){
+    public void showEntries(ArrayList range){
         for(int i = 0; i < range.size(); i++){
             MovieData md = (MovieData)range.get(i);
-            System.out.println(i + ": " + md.description());
+            System.out.println(i + ": " + md.getDescription());
         }
     }
     
-    public void fillArrayList(int fromYear, int toYear){
+    public ArrayList fillArrayListWithRange(int fromYear, int toYear){
+        ArrayList list = new ArrayList();
         String s = "";
         int line = -1;
         int actLines = -1;
@@ -62,12 +62,12 @@ private ArrayList range = new ArrayList();
             if(year >= fromYear && year <= toYear){
                 actLines++;
                 MovieData md = new MovieData(split);
-                this.range.add(md);
-                int i = 0;
+                list.add(md);         
             }
         }
-        System.out.println(line);
-        System.out.println(range.size());
+        /*System.out.println(line);
+        System.out.println(list.size());*/
+        return list;
     }
     
     private String getNextLine(){
@@ -85,8 +85,7 @@ private ArrayList range = new ArrayList();
      */
     public static void main(String[] args) {
         ReadTextFromFile read = new ReadTextFromFile();
-        //read.showNLines(100);
-        read.fillArrayList(2010, 2014);
-        read.showEntries();
+        //read.showNLines(100);   
+        read.showEntries(read.fillArrayListWithRange(2010, 2014));
     }
 }
