@@ -22,29 +22,41 @@ import readtext.ReadTextFromFile;
  * @author Andreas Eberhard
  */
 public class MyClient {
-    
-  
-    
+   
     private Cluster cluster;
     private Session session;
-    private BoundStatement insertMovieDesc;
-
    
-   
-    public void connect(String node) {
+    private PreparedStatement insertmoviedesc;
+    private PreparedStatement selectmoviedesc;
+    
+    public MyClient(String node){
+        connect(node);
+        init();
+    }
+    
+    private void init(){
+        insertmoviedesc = session.prepare("INSERT INTO movie_desc (title, description) VALUES (?, ?)");
+        selectmoviedesc = session.prepare("SELECT description FROM movie_desc WHERE title=?");
+    }
+    
+    public String getMovieDesc(String title){
+        //BatchStatement batch = new BatchStatement();
+        selectmoviedesc.bind(title);
+        ResultSet results = session.execute(selectmoviedesc.bind(title));
+        String result = "";
+        for (Row row : results) {
+            result += row.getString("description") + "\n";
+        }
+        return result;
+    }  
+    
+    private void connect(String node) {
         java.util.Calendar cal = java.util.Calendar.getInstance();
         long start = cal.getTimeInMillis();
         cluster = Cluster.builder()
              .addContactPoint(node)
              .build();
-        /*Metadata metadata = cluster.getMetadata();
-        System.out.printf("Connected to cluster: %s\n", 
-             metadata.getClusterName());
-        for ( Host host : metadata.getAllHosts() ) {
-          System.out.printf("Datatacenter: %s; Host: %s; Rack: %s\n",
-                host.getDatacenter(), host.getAddress(), host.getRack());
-        }*/
-
+        
         session = cluster.connect();
         session.execute("USE group18;");
         cal = java.util.Calendar.getInstance();
@@ -56,9 +68,27 @@ public class MyClient {
 
     public void insertData_Movie_Desc(ArrayList data){
         int done = 0;
-        PreparedStatement ps = session.prepare("INSERT INTO movie_desc (title, description) VALUES (?, ?)");
         BatchStatement batch = new BatchStatement();
         for(int i = 0; i < data.size(); i++){
+            done++;
+            MovieData md = (MovieData)data.get(i);
+            batch.add(insertmoviedesc.bind(md.getTitle(), md.getDescription()));
+            if(done > 999 ){
+                session.execute(batch);
+                System.out.println(i + " of batch done");
+                done = 0;
+                batch = new BatchStatement();
+            }   
+        }
+        session.execute(batch);
+        System.out.println("Inserting in movie_desc done.");
+    }
+    
+    public void insertData_Actors(MovieData md){
+        int done = 0;
+        PreparedStatement ps = session.prepare("INSERT INTO actors (name, filmed_in) VALUES (?, ?)");
+        BatchStatement batch = new BatchStatement();
+        for(int i = 0; i < md.getActors().length; i++){
             done++;
             if(done > 999 ){
                 session.execute(batch);
@@ -66,15 +96,12 @@ public class MyClient {
                 done = 0;
                 batch = new BatchStatement();
             }
-            MovieData md = (MovieData)data.get(i);
-            batch.add(ps.bind(md.getTitle(), md.getDescription()));
+            batch.add(ps.bind(md.getActors()[i], md.getTitle()));
         }
-        session.execute(batch);
-        System.out.println("Inserting in movie_desc done.");
+        System.out.println("Inserting in actors done.");
     }
-
+    
     public void showMoviesData(){
-
         java.util.Calendar cal = java.util.Calendar.getInstance();
         long start = cal.getTimeInMillis();
         ResultSet res = session.execute("SELECT * FROM movies");
@@ -94,10 +121,12 @@ public class MyClient {
     }
 
     public static void main(String[] args) {
-        MyClient client = new MyClient();
-        client.connect("54.185.23.182");
-        ReadTextFromFile read = new ReadTextFromFile();
-        client.insertData_Movie_Desc(read.fillArrayListWithRange(2010, 2014));
+        MyClient client = new MyClient("54.185.23.182");
+        /*ReadTextFromFile read = new ReadTextFromFile();
+        client.insertData_Movie_Desc(read.fillArrayListWithRange(2010, 2014));*/
+        
+        System.out.println(client.getMovieDesc("\"Angel Beats!\" (2010) {Alive (#1.7)}"));
+        
         client.close();
     }
 }
