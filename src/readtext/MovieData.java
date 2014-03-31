@@ -26,12 +26,24 @@ public class MovieData {
         this.rating = Float.parseFloat(split[2]);
         if(split.length > 3){
             if(!split[3].equals("")){
-                this.genre = split[3].split("\\|");
+                this.genre = split[3].split("\\|");             
+                for (int i = 0; i < this.genre.length; i++) {               	
+                	RatingData.Cache.add(new RatingData(title, this.genre[i], rating));
+                }
             }
             
             if(split.length > 4){
                 if(!split[4].equals("")){
                     this.actors = split[4].split("\\|");
+                    for (int i = 0; i < this.actors.length; i++) {               	
+                    	ActorData actorData = ActorData.Cache.get(this.actors[i]);                 	
+                    	if(actorData == null)
+                    	{
+                    		actorData = new ActorData(this.actors[i], 0);
+                    		ActorData.Cache.put(this.actors[i], actorData);
+                    	}                 	
+                    	actorData.setFilmedIn(actorData.getFilmedIn() + 1);
+                   }
                 }
             }
         }   
