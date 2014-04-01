@@ -252,8 +252,8 @@ public class CreateAndFillDatabase {
     }
 
     public static void main(String[] args) {
-        //CreateAndFillDatabase client = new CreateAndFillDatabase("54.185.23.182");
-        CreateAndFillDatabase client = new CreateAndFillDatabase("localhost");
+        CreateAndFillDatabase client = new CreateAndFillDatabase("54.185.23.182");
+        //CreateAndFillDatabase client = new CreateAndFillDatabase("localhost");
         ReadTextFromFile read = new ReadTextFromFile();
         
         client.insertData(read.fillArrayListWithRange(2010, 2014));

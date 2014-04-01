@@ -53,7 +53,7 @@ public class LabClient {
 		ResultSet results = session
 				.execute("SELECT description FROM movie_desc WHERE title = '"
 						+ title + "'");
-
+                
 		if (results != null) {
 			/*Row description = results.one();
 			return description;*/
@@ -90,7 +90,7 @@ public class LabClient {
 
 	public void addMovie(String title, 
 			int year, 
-			int rating, 
+			float rating, 
 			String[] genres,
 			String[] actors) {
 		
@@ -135,7 +135,7 @@ public class LabClient {
 	
 	public void deleteMovie(String title, 
 			int year, 
-			int rating, 
+			float rating, 
 			String[] genres,
 			String[] actors) {
 		
@@ -148,32 +148,34 @@ public class LabClient {
 		PreparedStatement deleteMovieDesc = session
 				.prepare("DELETE FROM Movie_desc WHERE title=?");
 		PreparedStatement deleteRating = session
-				.prepare("DELETE FROM Ratings WHERE genre='?' and rating=? and title='?'");
+				.prepare("DELETE FROM Ratings WHERE genre=? and rating=? and title=?");
 		PreparedStatement insertActor = session
 				.prepare("INSERT INTO Actors (name, filmed_in) VALUES (?, ?)");
 		PreparedStatement insertPopularity = session
 				.prepare("INSERT INTO Popularity (fake_field, name, filmed_in) VALUES (1, ?, ?)");
 		PreparedStatement deletePopularity = session
-				.prepare("DELETE FROM Popularity WHERE fake_field=1 AND filmed_in=? AND name='?'");
+				.prepare("DELETE FROM Popularity WHERE fake_field=1 AND filmed_in=? AND name=?");
 
 		String description = "TITLE: " + title + ";YEAR: " + year + ";"
 				+ "RATING: " + rating + "; GENRES: " + genres.toString() + ";"
 				+ "ACTORS: " + actors.toString() + ";";
 
-		batch.add(deleteMovieDesc.bind(title, description));
+		batch.add(deleteMovieDesc.bind(title));
 
 		for (int i = 0; i < genres.length; i++) {
 			batch.add(deleteRating.bind(genres[i], rating, title));
 		}
 
 		for (int i = 0; i < actors.length; i++) {
-			int filmedIn = getFilmedIn(actors[i]);
+			if(!actors[i].equals("unknown")){
+                        int filmedIn = getFilmedIn(actors[i]);
 			if (filmedIn == 0) {
 				batch.add(deletePopularity.bind(filmedIn, actors[i]));
 			}
 			filmedIn -= 1;
 			batch.add(insertActor.bind(actors[i], filmedIn));
 			batch.add(insertPopularity.bind(actors[i], filmedIn));
+                        }
 		}
 
 		session.execute(batch);
@@ -183,10 +185,10 @@ public class LabClient {
 		ResultSet results = session
 				.execute("SELECT filmed_in FROM actors WHERE name='"
 						+ actorName + "'");
-
-		if (results != null) {
-			Row description = results.one();
-			return description.getInt(0);
+                Row row;
+		if ((row = results.one()) != null) {
+			 
+			return row.getInt(0);
                     
 		}
 		return 0;
@@ -201,14 +203,25 @@ public class LabClient {
         }
         
 	public static void main(String[] args) {
-		//LabClient labClient = new LabClient("54.185.30.189");
-                LabClient labClient = new LabClient("localhost");
+		LabClient labClient = new LabClient("54.185.30.189");
+                //LabClient labClient = new LabClient("localhost");
                 System.out.println("\n" + "Get the movie Shoggoth (2012)"+ "\n");
 		printResults((ResultSet)labClient.getMovie("Shoggoth (2012)"));
                 System.out.println("\n" +"Get the 30 top rated movies from genre Musical"+ "\n");
 		printResults((ResultSet)labClient.getTopMovies("Musical"));
                 System.out.println("\n" + "Get the 10 top Actors who played in most movies" + "\n");
 		printResults((ResultSet)labClient.getTopActors());
+                
+                String [] genre1 = {"Fiction"};
+                String [] actors1 = {"Actor1", "Actor2"};
+                String [] genre2 = {"Fiction", "Comedy"};
+                String [] actors2 = {"Actor1", "Actor2", "Actor3"};
+                labClient.addMovie("TestMovie4", 2011, 1.1f, genre1, actors1);
+                labClient.addMovie("TestMovie3", 2012, 9.1f, genre2, actors2);
+                labClient.deleteMovie("TestMovie2", 1910, 9.1f, genre2, actors2);
+                System.out.println("\n" + "Get the movie TestMovie1"+ "\n");
+                printResults((ResultSet)labClient.getMovie("TestMovie1"));
+                
 		labClient.close();
 	}
 }
