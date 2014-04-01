@@ -5,7 +5,7 @@ package readtext;
 
 /**
  *
- * @author Andreas Eberhard
+ * @author Group18
  */
 public class MovieData {
     private int year;
@@ -66,6 +66,10 @@ public class MovieData {
         return as;
     }
     
+    public float getRating(){
+        return this.rating;
+    }
+    
     public String getGenreAsString(){
         String gs = "GENRE: ";
         for(int i = 0; i < genre.length; i++){
@@ -73,6 +77,10 @@ public class MovieData {
         }
         
         return gs;
+    }
+    
+    public String[] getGenre(){
+        return this.genre;
     }
     
     public String getDescription(){

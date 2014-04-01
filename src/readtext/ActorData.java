@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  *
- * @author Andreas Eberhard
+ * @author Group18
  */
 public class ActorData {
 	 

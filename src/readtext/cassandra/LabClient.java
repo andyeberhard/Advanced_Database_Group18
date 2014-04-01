@@ -13,6 +13,10 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
+/**
+ *
+ * @author Group18
+ */
 public class LabClient {
 	private Cluster cluster;
 	private Session session;
@@ -51,8 +55,9 @@ public class LabClient {
 						+ title + "'");
 
 		if (results != null) {
-			Row description = results.one();
-			return description;
+			/*Row description = results.one();
+			return description;*/
+                    return results;
 		}
 
 		return null;
@@ -64,19 +69,21 @@ public class LabClient {
 						+ genre + "' ORDER BY rating DESC LIMIT 30;");
 
 		if (results != null) {
-			Row description = results.one();
-			return description;
+			/*Row description = results.one();
+			return description;*/
+                    return results;
 		}
 		return null;
 	}
 
 	public Object getTopActors() {
-		ResultSet results = session
-				.execute("SELECT name, filmed_in FROM Popularity WHERE fake_field=1 ORDER BY filmed_in DESC LIMIT 10;");
+		ResultSet results = session.execute("SELECT name, filmed_in FROM popularity WHERE"
+                        + " fake_field=1 ORDER BY filmed_in DESC LIMIT 10;");
 
 		if (results != null) {
-			Row description = results.one();
-			return description;
+			/*Row description = results.one();
+			return description;*/
+                    return results;
 		}
 		return null;
 	}
@@ -180,15 +187,28 @@ public class LabClient {
 		if (results != null) {
 			Row description = results.one();
 			return description.getInt(0);
+                    
 		}
 		return 0;
 	}
 
+        private static void printResults(ResultSet result){
+            int i = 0;
+            for(Row row : result){
+                i++;
+                System.out.println(i + " " + row.toString());
+            }
+        }
+        
 	public static void main(String[] args) {
-		LabClient labClient = new LabClient("54.185.30.189");
-		// labClient.getMovie("Shoggoth (2012)");
-		labClient.getTopMovies("Musical");
-		//labClient.getTopActors();
+		//LabClient labClient = new LabClient("54.185.30.189");
+                LabClient labClient = new LabClient("localhost");
+                System.out.println("\n" + "Get the movie Shoggoth (2012)"+ "\n");
+		printResults((ResultSet)labClient.getMovie("Shoggoth (2012)"));
+                System.out.println("\n" +"Get the 30 top rated movies from genre Musical"+ "\n");
+		printResults((ResultSet)labClient.getTopMovies("Musical"));
+                System.out.println("\n" + "Get the 10 top Actors who played in most movies" + "\n");
+		printResults((ResultSet)labClient.getTopActors());
 		labClient.close();
 	}
 }
